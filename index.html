@@ -1,36 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
-<title>Weather Prediction System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Weather Prediction System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 body{
-font-family:Arial;
-background:linear-gradient(135deg,#74ebd5,#ACB6E5);
+font-family: Arial, sans-serif;
+background: linear-gradient(135deg,#74ebd5,#ACB6E5);
 text-align:center;
 padding:20px;
 }
 
 .container{
 background:white;
-padding:20px;
-border-radius:10px;
+padding:25px;
+border-radius:12px;
 max-width:500px;
 margin:auto;
-box-shadow:0px 5px 15px rgba(0,0,0,0.2);
+box-shadow:0px 5px 20px rgba(0,0,0,0.2);
+}
+
+h2{
+margin-bottom:15px;
 }
 
 input{
 width:90%;
 padding:10px;
-margin:8px;
-border-radius:5px;
+margin:6px;
+border-radius:6px;
 border:1px solid #ccc;
+font-size:15px;
 }
 
 button{
@@ -38,25 +45,26 @@ padding:10px 20px;
 border:none;
 background:#4CAF50;
 color:white;
-border-radius:5px;
+border-radius:6px;
 cursor:pointer;
-margin:10px;
+margin:8px;
+font-size:15px;
 }
 
 button:hover{
-background:#45a049;
+background:#43a047;
 }
 
 #result{
 font-size:22px;
-margin-top:10px;
 font-weight:bold;
+margin-top:10px;
 }
 
 #animation{
 font-size:70px;
 margin-top:10px;
-animation:pop 1s ease;
+animation: pop 1s ease;
 }
 
 @keyframes pop{
@@ -64,8 +72,14 @@ animation:pop 1s ease;
 100%{transform:scale(1)}
 }
 
+canvas{
+margin-top:20px;
+}
+
 </style>
+
 </head>
+
 
 <body>
 
@@ -73,15 +87,20 @@ animation:pop 1s ease;
 
 <h2>🌦 Weather Prediction System</h2>
 
-<input type="text" id="city" placeholder="Enter City">
+<input type="text" id="city" placeholder="Enter City Name">
+
 <br>
+
 <button onclick="getWeather()">Get Live Weather</button>
 
 <br><br>
 
 <input type="number" id="temperature" placeholder="Temperature °C">
+
 <input type="number" id="humidity" placeholder="Humidity %">
+
 <input type="number" id="pressure" placeholder="Pressure hPa">
+
 <input type="number" id="wind" placeholder="Wind Speed m/s">
 
 <br>
@@ -92,53 +111,63 @@ animation:pop 1s ease;
 
 <div id="animation"></div>
 
-<br>
-
 <canvas id="weatherChart"></canvas>
 
 </div>
+
 
 <script>
 
 let chart;
 
-// WEATHER PREDICTION
+
+// WEATHER PREDICTION FUNCTION
+
 function predictWeather(){
 
-let temp=parseFloat(document.getElementById("temperature").value);
-let humidity=parseFloat(document.getElementById("humidity").value);
-let pressure=parseFloat(document.getElementById("pressure").value);
-let wind=parseFloat(document.getElementById("wind").value);
+let temp = parseFloat(document.getElementById("temperature").value);
+let humidity = parseFloat(document.getElementById("humidity").value);
+let pressure = parseFloat(document.getElementById("pressure").value);
+let wind = parseFloat(document.getElementById("wind").value);
 
 let result="";
 let animation=document.getElementById("animation");
 
-// Prediction rule
+
 if(humidity>70 && pressure<1010){
+
 result="🌧 Rain Expected";
 animation.innerHTML="🌧🌧🌧";
+
 }
+
 else{
+
 result="☀ No Rain";
 animation.innerHTML="☀☀☀";
+
 }
 
 document.getElementById("result").innerHTML=result;
 
-// Update graph
+
 updateGraph(temp,humidity,pressure,wind);
 
 }
 
 
+
 // GRAPH FUNCTION
+
 function updateGraph(temp,humidity,pressure,wind){
 
 let data=[temp,humidity,pressure,wind];
 
 if(chart){
+
 chart.data.datasets[0].data=data;
 chart.update();
+
 }
 
 else{
@@ -146,22 +175,35 @@ else{
 const ctx=document.getElementById("weatherChart");
 
 chart=new Chart(ctx,{
+
 type:'bar',
+
 data:{
+
 labels:['Temperature','Humidity','Pressure','Wind Speed'],
+
 datasets:[{
+
 label:'Weather Parameters',
+
 data:data
+
 }]
+
 },
+
 options:{
+
 responsive:true,
+
 scales:{
-y:{
-beginAtZero:true
+
+y:{beginAtZero:true}
+
 }
+
 }
-}
+
 });
 
 }
@@ -169,7 +211,9 @@ beginAtZero:true
 }
 
 
-// REAL WEATHER API
+
+// REAL WEATHER API FUNCTION
+
 async function getWeather(){
 
 let city=document.getElementById("city").value;
@@ -177,11 +221,15 @@ let city=document.getElementById("city").value;
 let api="https://api.openweathermap.org/data/2.5/weather?q="+city+"&appid=YOUR_API_KEY&units=metric";
 
 let response=await fetch(api);
+
 let data=await response.json();
 
 document.getElementById("temperature").value=data.main.temp;
+
 document.getElementById("humidity").value=data.main.humidity;
+
 document.getElementById("pressure").value=data.main.pressure;
+
 document.getElementById("wind").value=data.wind.speed;
 
 }
