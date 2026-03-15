@@ -4,12 +4,11 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AI Weather Prediction System</title>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Leaflet Map -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -28,14 +27,14 @@ background:linear-gradient(#fceabb,#f8b500);
 }
 
 .rain-bg{
-background:linear-gradient(#4e54c8,#8f94fb);
+background:#0f2027;
 }
 
 .container{
 background:white;
 padding:20px;
 border-radius:12px;
-max-width:600px;
+max-width:650px;
 margin:auto;
 box-shadow:0 5px 20px rgba(0,0,0,0.2);
 }
@@ -77,12 +76,23 @@ canvas{
 margin-top:20px;
 }
 
+#rainCanvas{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:-1;
+}
+
 </style>
 
 </head>
 
 
 <body class="sun-bg">
+
+<canvas id="rainCanvas"></canvas>
 
 <div class="container">
 
@@ -115,20 +125,21 @@ margin-top:20px;
 
 </div>
 
+
 <script>
 
 let chart;
 
 
-// AI Rain Prediction
+// AI Prediction Model
 function aiPrediction(temp,humidity,pressure,wind){
 
 let score=0;
 
-score += humidity*0.4;
-score += (1015-pressure)*2;
-score += wind*2;
-score += (30-temp)*1.5;
+score+=humidity*0.4;
+score+=(1015-pressure)*2;
+score+=wind*2;
+score+=(30-temp)*1.5;
 
 let probability=Math.min(Math.max(score/5,0),100);
 
@@ -137,7 +148,7 @@ return probability;
 }
 
 
-// Prediction
+// Prediction Function
 function predictWeather(){
 
 let temp=parseFloat(document.getElementById("temperature").value);
@@ -156,12 +167,14 @@ if(probability>50){
 
 animation.innerHTML="🌧🌧🌧";
 document.body.className="rain-bg";
+document.getElementById("rainCanvas").style.display="block";
 
 }
 else{
 
 animation.innerHTML="☀☀☀";
 document.body.className="sun-bg";
+document.getElementById("rainCanvas").style.display="none";
 
 }
 
@@ -245,6 +258,74 @@ document.getElementById("wind").value=data.wind.speed;
 predictWeather();
 
 });
+
+
+// Rain Animation
+const canvas=document.getElementById("rainCanvas");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let rain=[];
+
+for(let i=0;i<300;i++){
+
+rain.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+length:Math.random()*20+10,
+speed:Math.random()*6+4
+});
+
+}
+
+function drawRain(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ctx.strokeStyle="rgba(174,194,224,0.5)";
+ctx.lineWidth=1;
+
+for(let i=0;i<rain.length;i++){
+
+let r=rain[i];
+
+ctx.beginPath();
+ctx.moveTo(r.x,r.y);
+ctx.lineTo(r.x,r.y+r.length);
+ctx.stroke();
+
+r.y+=r.speed;
+
+if(r.y>canvas.height){
+r.y=-20;
+r.x=Math.random()*canvas.width;
+}
+
+}
+
+requestAnimationFrame(drawRain);
+
+}
+
+drawRain();
+
+
+// Lightning
+setInterval(function(){
+
+if(Math.random()>0.96){
+
+document.body.style.backgroundColor="white";
+
+setTimeout(()=>{
+document.body.style.backgroundColor="";
+},100);
+
+}
+
+},300);
 
 </script>
 
