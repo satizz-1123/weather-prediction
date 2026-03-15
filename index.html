@@ -206,7 +206,7 @@ async function getWeather(){
 
 let city=document.getElementById("city").value;
 
-let api="https://api.openweathermap.org/data/2.5/weather?q="+city+"&appid=YOUR_API_KEY&units=metric";
+let api="https://api.openweathermap.org/data/2.5/weather?q="+city+"&appid=f519244ce7fb08e08b6cd8691a120bf0&units=metric";
 
 let response=await fetch(api);
 let data=await response.json();
@@ -232,7 +232,7 @@ map.on('click', async function(e){
 let lat=e.latlng.lat;
 let lon=e.latlng.lng;
 
-let api=`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=YOUR_API_KEY&units=metric`;
+let api=`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=f519244ce7fb08e08b6cd8691a120bf0&units=metric`;
 
 let response=await fetch(api);
 let data=await response.json();
