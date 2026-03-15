@@ -4,31 +4,40 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Weather Prediction System</title>
 
-<title>Weather Prediction System</title>
-
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Leaflet Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
 
 body{
-font-family: Arial, sans-serif;
-background: linear-gradient(135deg,#74ebd5,#ACB6E5);
-text-align:center;
+font-family:Arial;
+margin:0;
 padding:20px;
+text-align:center;
+transition:0.5s;
+}
+
+.sun-bg{
+background:linear-gradient(#fceabb,#f8b500);
+}
+
+.rain-bg{
+background:linear-gradient(#4e54c8,#8f94fb);
 }
 
 .container{
 background:white;
-padding:25px;
+padding:20px;
 border-radius:12px;
-max-width:500px;
+max-width:600px;
 margin:auto;
-box-shadow:0px 5px 20px rgba(0,0,0,0.2);
-}
-
-h2{
-margin-bottom:15px;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
 }
 
 input{
@@ -37,7 +46,6 @@ padding:10px;
 margin:6px;
 border-radius:6px;
 border:1px solid #ccc;
-font-size:15px;
 }
 
 button{
@@ -47,29 +55,22 @@ background:#4CAF50;
 color:white;
 border-radius:6px;
 cursor:pointer;
-margin:8px;
-font-size:15px;
+margin:10px;
 }
 
 button:hover{
 background:#43a047;
 }
 
-#result{
-font-size:22px;
-font-weight:bold;
-margin-top:10px;
-}
-
 #animation{
-font-size:70px;
+font-size:60px;
 margin-top:10px;
-animation: pop 1s ease;
 }
 
-@keyframes pop{
-0%{transform:scale(0)}
-100%{transform:scale(1)}
+#map{
+height:400px;
+margin-top:20px;
+border-radius:10px;
 }
 
 canvas{
@@ -81,13 +82,13 @@ margin-top:20px;
 </head>
 
 
-<body>
+<body class="sun-bg">
 
 <div class="container">
 
-<h2>🌦 Weather Prediction System</h2>
+<h2>🌦 AI Weather Prediction System</h2>
 
-<input type="text" id="city" placeholder="Enter City Name">
+<input type="text" id="city" placeholder="Enter City">
 
 <br>
 
@@ -96,69 +97,80 @@ margin-top:20px;
 <br><br>
 
 <input type="number" id="temperature" placeholder="Temperature °C">
-
 <input type="number" id="humidity" placeholder="Humidity %">
-
 <input type="number" id="pressure" placeholder="Pressure hPa">
-
 <input type="number" id="wind" placeholder="Wind Speed m/s">
 
 <br>
 
 <button onclick="predictWeather()">Predict Weather</button>
 
-<div id="result"></div>
+<h3 id="result"></h3>
 
 <div id="animation"></div>
 
 <canvas id="weatherChart"></canvas>
 
-</div>
+<div id="map"></div>
 
+</div>
 
 <script>
 
 let chart;
 
 
-// WEATHER PREDICTION FUNCTION
+// AI Rain Prediction
+function aiPrediction(temp,humidity,pressure,wind){
 
+let score=0;
+
+score += humidity*0.4;
+score += (1015-pressure)*2;
+score += wind*2;
+score += (30-temp)*1.5;
+
+let probability=Math.min(Math.max(score/5,0),100);
+
+return probability;
+
+}
+
+
+// Prediction
 function predictWeather(){
 
-let temp = parseFloat(document.getElementById("temperature").value);
-let humidity = parseFloat(document.getElementById("humidity").value);
-let pressure = parseFloat(document.getElementById("pressure").value);
-let wind = parseFloat(document.getElementById("wind").value);
+let temp=parseFloat(document.getElementById("temperature").value);
+let humidity=parseFloat(document.getElementById("humidity").value);
+let pressure=parseFloat(document.getElementById("pressure").value);
+let wind=parseFloat(document.getElementById("wind").value);
 
-let result="";
+let probability=aiPrediction(temp,humidity,pressure,wind);
+
+document.getElementById("result").innerHTML=
+"Rain Probability: "+probability.toFixed(1)+"%";
+
 let animation=document.getElementById("animation");
 
+if(probability>50){
 
-if(humidity>70 && pressure<1010){
-
-result="🌧 Rain Expected";
 animation.innerHTML="🌧🌧🌧";
+document.body.className="rain-bg";
 
 }
-
 else{
 
-result="☀ No Rain";
 animation.innerHTML="☀☀☀";
+document.body.className="sun-bg";
 
 }
-
-document.getElementById("result").innerHTML=result;
-
 
 updateGraph(temp,humidity,pressure,wind);
 
 }
 
 
-
-// GRAPH FUNCTION
-
+// Graph
 function updateGraph(temp,humidity,pressure,wind){
 
 let data=[temp,humidity,pressure,wind];
@@ -169,41 +181,19 @@ chart.data.datasets[0].data=data;
 chart.update();
 
 }
-
 else{
 
 const ctx=document.getElementById("weatherChart");
 
 chart=new Chart(ctx,{
-
 type:'bar',
-
 data:{
-
-labels:['Temperature','Humidity','Pressure','Wind Speed'],
-
+labels:['Temperature','Humidity','Pressure','Wind'],
 datasets:[{
-
 label:'Weather Parameters',
-
 data:data
-
 }]
-
-},
-
-options:{
-
-responsive:true,
-
-scales:{
-
-y:{beginAtZero:true}
-
 }
-
-}
-
 });
 
 }
@@ -211,9 +201,7 @@ y:{beginAtZero:true}
 }
 
 
-
-// REAL WEATHER API FUNCTION
-
+// Weather API
 async function getWeather(){
 
 let city=document.getElementById("city").value;
@@ -221,18 +209,42 @@ let city=document.getElementById("city").value;
 let api="https://api.openweathermap.org/data/2.5/weather?q="+city+"&appid=YOUR_API_KEY&units=metric";
 
 let response=await fetch(api);
-
 let data=await response.json();
 
 document.getElementById("temperature").value=data.main.temp;
-
 document.getElementById("humidity").value=data.main.humidity;
-
 document.getElementById("pressure").value=data.main.pressure;
-
 document.getElementById("wind").value=data.wind.speed;
 
 }
+
+
+// Map
+var map=L.map('map').setView([20,78],4);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+maxZoom:19
+}).addTo(map);
+
+
+map.on('click', async function(e){
+
+let lat=e.latlng.lat;
+let lon=e.latlng.lng;
+
+let api=`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=YOUR_API_KEY&units=metric`;
+
+let response=await fetch(api);
+let data=await response.json();
+
+document.getElementById("temperature").value=data.main.temp;
+document.getElementById("humidity").value=data.main.humidity;
+document.getElementById("pressure").value=data.main.pressure;
+document.getElementById("wind").value=data.wind.speed;
+
+predictWeather();
+
+});
 
 </script>
 
